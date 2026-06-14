@@ -66,19 +66,6 @@ Output: 511×511 matrix, zero-padded to 512×512 for DRAM alignment
 | `start` | Input | Asserted by testbench to begin processing |
 | `ready` | Output | High when idle; de-asserts on `start`, re-asserts after final DRAM write |
 
-### DUT ↔ SDRAM
-
-| Signal | Description |
-|---|---|
-| `CMD` | `0x0` = IDLE, `0x1` = READ, `0x2` = WRITE |
-| `Address` | Must be valid/stable whenever CMD is READ or WRITE |
-| `DQ_oe` | Output enable: `1` = DUT writing, `0` = DUT reading |
-| `DQ_din` | Data from DUT to bus (valid when `DQ_oe = 1`) |
-| `DQ_dout` | Data from bus to DUT (sampled when `DQ_oe = 0`) |
-
-> Deassert `DQ_oe` after the final write beat before any subsequent read to avoid bus contention.
-
----
 
 ## DRAM Memory Layout
 
@@ -93,48 +80,8 @@ Data is stored as 64-bit (8-byte) little-endian words. The 4×4 kernel occupies 
 
 Output is written in row-major order. Each row is zero-padded to the nearest multiple of 8 bytes for address alignment.
 
----
 
-## Optional SRAM Scratchpad
 
-A dual-port SRAM (separate read/write ports) is instantiated in the testbench by default and available as scratchpad memory. Located at `/srcs/tb/`. If unused, `OPT-1206` warnings about constant registers can be safely ignored.
-
----
-
-## Debug Inputs
-
-Smaller 32×32 debug inputs with expected outputs are provided for early-stage testing. Set the simulation target to `debug` when using these:
-
-```bash
-# Use debug preset (32x32 input)
-cmake --preset debug
-
-# Restore for full test suite
-cmake --preset run
-```
-
----
-
-## Build & Submission
-
-```bash
-# Build and run simulation
-# Follow README.pdf in the project directory for full build instructions
-
-# Generate submission archive
-# Update CMakePresets.json with your Unity ID, class (464/564), and clock period first
-make submit
-# Produces: submission.<unityID>.tar.gz
-```
-
-### Key Requirements
-- RTL stub to implement: `./srcs/rtl/dut.sv`
-- Must use at least one SystemVerilog-specific feature
-- Final clock period must pass timing in a single synthesis run (no incremental compile)
-- No synthesis errors: no latches, wired-OR, combinational feedback, or unresolved timing arcs
-- Pipeline target: complete all computation within `1024 × 1024 × 1.25` cycles
-
----
 
 ## Report Checklist
 
